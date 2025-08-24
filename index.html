@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navdeep Dwivedi - Music Producer</title>
+    <!-- Use Dancing Script and Inter font from Google Fonts for a clean look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Load Three.js from a public CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Load Tailwind CSS from a public CDN for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the body to ensure full-screen layout and font */
+        body {
+            font-family: 'Courier New', sans-serif;
+            margin: 0;
+            overflow-y: auto; /* Allow scrolling for content sections */
+            overflow-x: hidden;
+        }
+        /* Style for the Three.js canvas */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1; /* Puts the canvas behind the main content */
+            width: 100vw;
+            height: 100vh;
+        }
+        /* Style for the subtle image overlay with parallax effect */
+        #image-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -2; /* Puts the image behind the Three.js canvas */
+            width: 110vw; /* Make it slightly larger to allow for movement */
+            height: 110vh; /* Make it slightly larger to allow for movement */
+            background-image: url('./bg.jpg'); /* New image address */
+            background-size: cover; /* Changed to cover for a full-screen image */
+            background-position: center;
+            opacity: 0.2; /* Adjust opacity for subtlety */
+            filter: grayscale(100%); /* Make it black and white for a classy look */
+        }
+        /* Style for the main content container to enable transitions */
+        #content-wrapper {
+            transition: opacity 0.5s ease-in-out;
+        }
+        /* Custom scrollbar styling for a sleek look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4a4a4a;
+            border-radius: 4px;
+        }
+.logo-text {
+    font-family: 'Papyrus';
+    font-weight: 700;
+    font-size: 80px;
+    fill: none;
+    stroke-width: 2px;
+    stroke-dasharray: 800;
+    stroke-dashoffset: 800;
+    animation: stroke-anim 8s ease-out infinite; /* 10s cycle, infinite loop */
+}
+
+@keyframes stroke-anim {
+    0% {
+        stroke-dashoffset: 800; /* fully hidden */
+    }
+    60% {
+        stroke-dashoffset: 0;   /* fully drawn by 6s */
+    }
+    90% {
+        stroke-dashoffset: 0;   /* hold for a moment */
+    }
+}
+
+        
+        .main-logo-stroke {
+            stroke: white;
+        }
+        @keyframes stroke-anim {
+            from {
+                stroke-dashoffset: 800;
+            }
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+        .logo-glow {
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5)) drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+        }
+        .styled-link {
+            font-family: 'Copperplate';
+            color: greenyellow; /* default text color */
+            text-decoration: none; /* remove underline by default */
+            transition: color 0.3s ease, text-decoration 0.3s ease;
+        }
+
+        .styled-link:hover {
+            color: green; /* change to any hover color */
+            text-decoration: underline; /* underline on hover */
+        }
+
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100">
+
+    <!-- Three.js canvas for the background animation -->
+    <canvas id="bgCanvas"></canvas>
+    
+    <!-- Subtle image overlay behind the canvas -->
+    <div id="image-overlay"></div>
+
+    <!-- Main content container -->
+    <div class="relative z-10 w-full min-h-screen p-4 md:p-8 flex flex-col items-center">
+
+        <!-- Header with SVG Logo and Navigation -->
+        <header class="w-full max-w-5xl flex justify-between items-center mb-4">
+            <!-- Artistic SVG Logo for Navdeep -->
+            <a href="#" data-target="home" id="logo-link" class="flex items-center">
+                <svg id="name-logo" class="w-auto h-8 md:h-10" viewBox="0 0 400 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" class="logo-text main-logo-stroke logo-glow">Navdeep</text>
+                </svg>
+            </a>
+
+            <!-- Main Navigation -->
+            <nav class="mt-0 flex flex-wrap gap-2 md:gap-4 text-sm md:text-lg font-medium" id="main-nav">
+                <a href="#" data-target="portfolio" class="px-2 py-1 md:px-4 md:py-2 hover:bg-white/10 transition-colors duration-300 rounded-full">Portfolio</a>
+                <a href="#" data-target="contact" class="px-2 py-1 md:px-4 md:py-2 hover:bg-white/10 transition-colors duration-300 rounded-full">Contact</a>
+            </nav>
+        </header>
+
+        <!-- Subheader for Portfolio sections -->
+        <div id="subheader" class="w-full max-w-5xl mb-2 transition-all duration-500 ease-in-out opacity-0 h-0 overflow-hidden">
+            <nav class="flex flex-wrap justify-center gap-2 text-xs md:text-sm font-medium">
+                <a href="#" data-target="produced" class="px-2 py-1 hover:bg-white/10 transition-colors duration-300 rounded-full">Produced</a>
+                <a href="#" data-target="mixed-mastered" class="px-2 py-1 hover:bg-white/10 transition-colors duration-300 rounded-full">Mixed & Mastered</a>
+                <a href="#" data-target="my-music" class="px-2 py-1 hover:bg-white/10 transition-colors duration-300 rounded-full">My Music</a>
+            </nav>
+        </div>
+
+        <!-- Main content area. This div's content will be dynamically updated. -->
+        <div id="content-wrapper" class="w-full max-w-5xl bg-gray-800/50 p-6 md:p-8 rounded-2xl shadow-lg border border-gray-700/50 backdrop-blur-sm min-h-[500px]">
+            <!-- Initial content will be loaded here by JavaScript -->
+        </div>
+
+    </div>
+
+    <!-- JavaScript for Three.js animation and content loading -->
+    <script>
+        window.onload = function() {
+            // --- Three.js Animation Setup ---
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('bgCanvas'),
+                alpha: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            const particleCount = 2000;
+            const particles = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const velocities = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount; i++) {
+                const r = 20 + Math.random() * 40;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(Math.random() * 2 - 1);
+                positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+                positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+                positions[i * 3 + 2] = r * Math.cos(phi);
+                velocities[i * 3] = (Math.random() - 0.5) * 0.01;
+                velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.01;
+                velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.01;
+            }
+
+            particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particles.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+            const particleMaterial = new THREE.PointsMaterial({
+                color: 0x8A2BE2,
+                size: 0.1,
+                transparent: true,
+                opacity: 0.7
+            });
+            const particleSystem = new THREE.Points(particles, particleMaterial);
+            scene.add(particleSystem);
+            camera.position.z = 50;
+
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+            window.addEventListener('resize', onWindowResize, false);
+
+            const mouse = new THREE.Vector2();
+            function onMouseMove(event) {
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            }
+            window.addEventListener('mousemove', onMouseMove, false);
+
+            // Add new global variable to track scroll position
+            let scrollY = 0;
+
+            const animate = function() {
+                requestAnimationFrame(animate);
+
+                // Update particle positions based on their velocities and mouse influence
+                const positions = particleSystem.geometry.attributes.position.array;
+                const velocities = particleSystem.geometry.attributes.velocity.array;
+                for (let i = 0; i < particleCount; i++) {
+                    positions[i * 3] += velocities[i * 3];
+                    positions[i * 3 + 1] += velocities[i * 3 + 1];
+                    positions[i * 3 + 2] += velocities[i * 3 + 2];
+                    if (positions[i * 3] > 60 || positions[i * 3] < -60) velocities[i * 3] *= -1;
+                    if (positions[i * 3 + 1] > 60 || positions[i * 3 + 1] < -60) velocities[i * 3 + 1] *= -1;
+                    if (positions[i * 3 + 2] > 60 || positions[i * 3 + 2] < -60) velocities[i * 3 + 2] *= -1;
+                }
+                particleSystem.geometry.attributes.position.needsUpdate = true;
+                
+                // Update camera position based on scroll and mouse
+                camera.position.x += (mouse.x * 5 - camera.position.x) * 0.05;
+                camera.position.y += (mouse.y * 5 - camera.position.y) * 0.05;
+                camera.position.z = 50 - (scrollY * 0.01); // Z-axis movement based on scroll
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
+            };
+
+            animate();
+
+            // --- Parallax Effect for Image Overlay ---
+            const imageOverlay = document.getElementById('image-overlay');
+            const scrollSpeed = 0.2; // Adjust for more or less parallax effect
+
+            function updateParallax() {
+                // Parallax scroll effect (opposite direction of scroll)
+                scrollY = window.scrollY;
+                const backgroundY = `calc(50% - ${scrollY * scrollSpeed}px)`; // Adjusted to move opposite
+                imageOverlay.style.backgroundPositionY = backgroundY;
+
+                // Parallax mouse effect (opposite direction of mouse)
+                const mouseX = mouse.x;
+                const mouseSpeedX = 5;
+                const backgroundX = `calc(50% - ${mouseX * mouseSpeedX}px)`; // Adjusted to move opposite
+                imageOverlay.style.backgroundPositionX = backgroundX;
+            }
+
+            window.addEventListener('scroll', updateParallax);
+            window.addEventListener('mousemove', updateParallax);
+
+            // --- Dynamic Content Loading Setup ---
+            const contentWrapper = document.getElementById('content-wrapper');
+            const nav = document.getElementById('main-nav');
+            const subheader = document.getElementById('subheader');
+            const logoLink = document.getElementById('logo-link');
+            
+            const logoTextElement = document.querySelector('.logo-text');
+            // Store all content HTML in a single object for easy management.
+            const contentData = {
+                'home': `
+                    <section id="portfolio-intro" class="flex flex-col items-center justify-center min-h-[500px] text-center">
+                        <p class="content-paragraph text-gray-300">
+                            Do you have a tune that needs production, <a href="#" data-target="contact" class="styled-link">contact me</a>.
+                        </p>
+                        <p class="content-paragraph text-gray-300">
+                            Check out my <a href="#" data-target="portfolio" class="styled-link">portfolio here</a>.
+                        </p>
+                    </section>
+                `,
+                'produced': `
+                    <section id="produced">
+                        <h2 class="text-4xl font-bold mb-4 text-purple-300">Produced</h2>
+                        <p class="content-paragraph text-gray-300 mb-6">A showcase of artists and bands whose music I have had the privilege of producing. I focus on bringing their creative ideas to life, from initial concept to final mix.</p>
+                        <div class="space-y-4">
+                            <iframe class="w-full aspect-video rounded-lg" src="https://www.youtube.com/embed/rS11T1r6H1Y" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe class="w-full aspect-video rounded-lg" src="https://www.youtube.com/embed/B5UBmdTa0x8" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe class="w-full aspect-video rounded-lg" src="https://www.youtube.com/embed/FsEjuHEbQZU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe class="w-full aspect-video rounded-lg" src="https://www.youtube.com/embed/5Y7SqU-LjqU" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </div>
+                    </section>
+                `,
+                'mixed-mastered': `
+                    <section id="mixed-mastered">
+                        <h2 class="text-4xl font-bold mb-4 text-pink-300">Mixed & Mastered</h2>
+                        <p class="content-paragraph text-gray-300 mb-6">This section highlights my work in the final stages of audio production. I specialize in giving tracks a polished, professional sound, ensuring they translate perfectly across all listening platforms.</p>
+                        <div class="space-y-4">
+                            <iframe class="w-full aspect-video rounded-lg" src="https://www.youtube.com/embed/G-jJltE9zsA" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe class="w-full aspect-video rounded-lg" src="https://www.youtube.com/embed/jR3bMt5gqTo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe class="w-full aspect-video rounded-lg" src="https://www.youtube.com/embed/yMnHWCb49mg" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe class="w-full aspect-video rounded-lg" src="https://www.youtube.com/embed/6moQeps28sY" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <iframe class="w-full aspect-video rounded-lg" src="https://www.youtube.com/embed/jE8-jralxoo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        </div>
+                    </section>
+                `,
+                'my-music': `
+                    <section id="my-music">
+                        <h2 class="text-4xl font-bold mb-4 text-blue-300">My Music</h2>
+                        <p class="content-paragraph text-gray-300 mb-6">Coming Soon...</p>
+                    </section>
+                `,
+                'contact': `
+                    <section id="contact" class="text-center">
+                        <h2 class="text-4xl font-bold mb-4 text-emerald-300">Contact</h2>
+                        <p class="content-paragraph text-gray-300 mb-6">Let's connect and create something incredible together. Reach out via the links below.</p>
+                        <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+                            <!-- Email link -->
+                            <a href="mailto:your.email@example.com" class="bg-emerald-600 hover:bg-emerald-500 transition-colors duration-300 text-white font-bold py-3 px-6 rounded-full shadow-lg flex items-center gap-2">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-2-3H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2z"></path></svg>
+                                Email Me
+                            </a>
+                            <!-- WhatsApp link - Replace the number with your own, including the country code -->
+                            <a href="https://wa.me/919999999999" class="bg-green-600 hover:bg-green-500 transition-colors duration-300 text-white font-bold py-3 px-6 rounded-full shadow-lg flex items-center gap-2">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.04 2c-5.45 0-9.91 4.46-9.91 9.91 0 1.6.43 3.12 1.25 4.47l-1.12 4.12 4.22-1.1c1.32.74 2.82 1.14 4.56 1.14 5.45 0 9.91-4.46 9.91-9.91C21.95 6.46 17.49 2 12.04 2zm4.33 13.56c-.23.23-.5.35-.8.35-.29 0-.57-.12-.78-.34-.23-.23-.34-.5-.34-.78V10.7c0-.28.12-.55.34-.78.22-.22.5-.34.78-.34.28 0 .55.12.78.34.22.23.34.5.34.78v4.86c0 .28-.12.55-.34.78zm-2.18-.78c-.23.23-.5.35-.8.35-.29 0-.57-.12-.78-.34-.23-.23-.34-.5-.34-.78V10.7c0-.28.12-.55.34-.78.22-.22.5-.34.78-.34.28 0 .55.12.78.34.22.23.34.5.34.78v4.86c0 .28-.12.55-.34.78z"/></svg>
+                                WhatsApp Me
+                            </a>
+                        </div>
+                    </section>
+                `
+            };
+
+            // This function handles the dissolving effect
+            function loadContent(target) {
+                // Dissolve out by setting opacity to 0
+                contentWrapper.style.opacity = '0';
+                
+                // Wait for the transition to finish (500ms) before changing content
+                setTimeout(() => {
+                    // Update the content based on the target
+                    contentWrapper.innerHTML = contentData[target];
+                    
+                    // Dissolve back in by setting opacity to 1
+                    contentWrapper.style.opacity = '1';
+
+                    // Since the view should not shift, we don't scroll
+                }, 500); // This delay should match the CSS transition duration
+            }
+
+            // Function to handle showing/hiding the subheader
+            function toggleSubheader(show) {
+                const subheaderClassList = subheader.classList;
+                if (show) {
+                    subheaderClassList.remove('opacity-0', 'h-0', 'overflow-hidden');
+                    subheaderClassList.add('opacity-100', 'h-auto', 'py-2');
+                } else {
+                    subheaderClassList.add('opacity-0', 'h-0', 'overflow-hidden');
+                    subheaderClassList.remove('opacity-100', 'h-auto', 'py-2');
+                }
+            }
+
+            // Add event listener to the main navigation links
+            nav.addEventListener('click', (e) => {
+                const target = e.target.getAttribute('data-target');
+                if (target) {
+                    e.preventDefault(); // Prevent default link behavior
+                    
+                    if (target === 'portfolio') {
+                        toggleSubheader(true);
+                        // Load default portfolio content or first sub-section
+                        loadContent('produced');
+                    } else {
+                        toggleSubheader(false);
+                        loadContent(target);
+                    }
+                }
+            });
+
+            // Add event listener to the subheader links
+            subheader.addEventListener('click', (e) => {
+                const target = e.target.getAttribute('data-target');
+                if (target) {
+                    e.preventDefault();
+                    loadContent(target);
+                }
+            });
+
+            // Add event listener for the logo to go to the home page
+            logoLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                toggleSubheader(false);
+                loadContent('home');
+            });
+
+            // Add event listener to the "Explore My Portfolio" button on the home page
+            document.addEventListener('click', (e) => {
+                const target = e.target.getAttribute('data-target');
+                if (target) {
+                    if (target === 'portfolio') {
+                        toggleSubheader(true);
+                        loadContent('produced');
+                    } else if (target === 'contact') {
+                        toggleSubheader(false);
+                        loadContent('contact');
+                    }
+                }
+            });
+
+            // Initial content load on page load
+            loadContent('home');
+        };
+    </script>
+
+</body>
+</html>
